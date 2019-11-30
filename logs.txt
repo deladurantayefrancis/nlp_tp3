@@ -1,0 +1,6 @@
+model4:
+bigrams, threshold=100, hidden_size=100
+phraser -> 341s
+word2ec -> 263s
+
+
