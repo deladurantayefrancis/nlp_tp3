@@ -26,6 +26,8 @@ sort_ids = np.flip(np.argsort(dists, axis=1), axis=1)
 
 with open(f'{FOLDER}/voisins', 'w') as file:
 	for idx in tqdm(most_neighbors):
+		if n_neighbors[idx] < 7:
+			break
 		word = nlp.vocab[keys[idx]].text
 		neighbors = ' '.join([nlp.vocab[keys[sort_ids[idx, j]]].text
 			for j in range(1, min(15, n_neighbors[idx]))])
