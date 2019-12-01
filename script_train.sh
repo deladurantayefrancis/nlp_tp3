@@ -1,12 +1,17 @@
 #!/bin/bash
 
-threshold=$1
-size=$2
+thresholds="50,100"
+sizes="100,200,300"
 
-folder="model_T-${threshold}_S-${size}"
+python src/word2vec.py $threshold $size
 
-python src/word2vec.py $folder $threshold $size
-
-gzip $folder/word2vec.txt
-python -m spacy init-model en "$folder/spacy.word2vec.model" --vectors-loc "$folder/word2vec.txt.gz"
+for t in {50..100..50}
+do
+    for s in {100..300..100}
+    do
+        folder="model_T-${t}_S-${s}"
+        gzip $folder/word2vec.txt
+        python -m spacy init-model en "$folder/spacy.word2vec.model" --vectors-loc "$folder/word2vec.txt.gz"
+    done
+done
 
