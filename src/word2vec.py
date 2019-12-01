@@ -48,5 +48,5 @@ print('phraser:', time.time() - start)
 
 start = time.time()
 model = models.Word2Vec(sentences=sentences, size=SIZE)
-model.wv.save_word2vec_format(f'{FOLDER}/word2vec_T-{THRESHOLD}_S-{SIZE}.txt')
+model.wv.save_word2vec_format(f'{FOLDER}/word2vec.txt')
 print('word2vec:', time.time() - start)
