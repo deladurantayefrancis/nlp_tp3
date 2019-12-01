@@ -47,6 +47,6 @@ print(bigram[test5])
 print('phraser:', time.time() - start)
 
 start = time.time()
-model = models.Word2Vec(sentences=sentences, size=300)
+model = models.Word2Vec(sentences=sentences, size=200)
 model.wv.save_word2vec_format(f'{FOLDER}/word2vec.txt')
 print('word2vec:', time.time() - start)

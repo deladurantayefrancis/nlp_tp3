@@ -13,7 +13,7 @@ from tqdm import tqdm
 FOLDER = sys.argv[1]
 nlp = spacy.load(f'{FOLDER}/spacy.word2vec.model/')
 
-nlp.vocab.vectors.resize((20000, 300))
+nlp.vocab.vectors.resize((25000, 300))
 
 keys = list(nlp.vocab.vectors.keys())
 vectors = np.asarray([nlp.vocab.vectors[key] for key in keys])
