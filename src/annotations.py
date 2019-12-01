@@ -75,6 +75,9 @@ for annotation in annotations:
 		cohyponyms[first].append(second)
 		cohyponyms[second].append(first)
 
+
+print(synonyms)
+
 """
 write_to_csv('synonyms', synonyms)
 write_to_csv('related', related)
@@ -114,7 +117,7 @@ with open('out/voisins', 'r') as file:
 			if kinds != '':
 				new_neighbors.append(neigh + kinds)
 
-		if len(new_neighbors) > 1:
+		if len(new_neighbors) > 0:
 			new_content.append([word] + [n_neighbors] + [new_neighbors])
 		#file.write('%-25s %-4s %s\n' % (neigh, n_neighbors[idx], neighbors))
 
