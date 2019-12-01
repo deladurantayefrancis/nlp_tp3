@@ -3,7 +3,7 @@
 thresholds="50,100"
 sizes="100,200,300"
 
-python src/word2vec.py $threshold $size
+python src/word2vec.py $thresholds $sizes
 
 for t in {50..100..50}
 do
