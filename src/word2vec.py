@@ -20,7 +20,7 @@ with open('data/train_posts.txt', 'r') as file:
 sentences = [utils.simple_preprocess(sent) for sent in sentences]
 
 start = time.time()
-phrases = Phrases(sentences, threshold=100)
+phrases = Phrases(sentences, threshold=50)
 bigram = Phraser(phrases)
 sentences = [bigram[sent] for sent in sentences]
 
@@ -40,9 +40,13 @@ test4 = utils.simple_preprocess("We're not the ones that are goint to save this 
 print(test4)
 print(bigram[test4])
 
+test5 = utils.simple_preprocess("I'd prefer to drink green tea over black tea.")
+print(test5)
+print(bigram[test5])
+
 print('phraser:', time.time() - start)
 
 start = time.time()
-model = models.Word2Vec(sentences=sentences)
+model = models.Word2Vec(sentences=sentences, size=300)
 model.wv.save_word2vec_format(f'{FOLDER}/word2vec.txt')
 print('word2vec:', time.time() - start)

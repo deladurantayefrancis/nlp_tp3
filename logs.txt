@@ -3,4 +3,9 @@ bigrams, threshold=100, hidden_size=100
 phraser -> 341s
 word2ec -> 263s
 
+model5:
+bigrams, threshold=50, hidden_size=300
+phraser -> 341s
+word2ec -> 424s
+
 
