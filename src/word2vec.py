@@ -20,20 +20,20 @@ sizes = [int(s) for s in sizes.split(',')]
 with open('data/train_posts.txt', 'r') as file:
 	sentences = file.readlines()
 
-sentences = [utils.simple_preprocess(sent) for sent in sentences]
+sentences = [utils.simple_preprocess(sent) for sent in tqdm(sentences)]
 
 
-for threshold in thresholds:
+for threshold in tqdm(thresholds):
 	start = time.time()
-	phrases = Phrases(sentences, threshold=THRESHOLD)
+	phrases = Phrases(sentences, threshold=threshold)
 	bigram = Phraser(phrases)
 	sents = [bigram[sent] for sent in sentences]
 	print(f'phraser_{threshold}:', time.time() - start)
 
-	for size in sizes:
+	for size in tqdm(sizes):
 		FOLDER = f'model_T-{threshold}_S-{size}'
 		os.makedirs(FOLDER, exist_ok=True)
 		start = time.time()
-		model = models.Word2Vec(sentences=sents, size=SIZE)
+		model = models.Word2Vec(sentences=sents, size=size)
 		model.wv.save_word2vec_format(f'{FOLDER}/word2vec.txt')
 		print(f'word2vec_{size}:', time.time() - start)
