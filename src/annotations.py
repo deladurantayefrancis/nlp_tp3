@@ -161,6 +161,8 @@ for line in tqdm(lines):
 		
 		kinds = ''
 
+		########## USING NLTK LISTS ##########
+
 		if neigh in ant:
 			kinds += '[ANTONYM]'
 		if neigh in hypo:
@@ -186,6 +188,7 @@ for line in tqdm(lines):
 				if neigh in cohypo:
 					kinds += '[COHYPO]'
 
+		########## USING OTHER LISTS ##########
 
 		if neigh in related and word in related[neigh]:
 			kinds += '[RELATED]'
@@ -206,7 +209,7 @@ for line in tqdm(lines):
 			if '[ANTONYM]' not in kinds and '[SYNONYM]' not in kinds:
 				if neigh in cohyponyms and word in cohyponyms[neigh] and '[COHYPO]' not in kinds:
 					kinds += '[COHYPO]'
-					
+
 
 		if kinds == '':
 			if nltk.edit_distance(word, neigh) <= abs(len(word) - len(neigh)) and word[:2] == neigh[:2] \
