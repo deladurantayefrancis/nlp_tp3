@@ -1,23 +1,24 @@
-def write_to_csv(filename, neigh_pairs):
-	path = 'out/' + filename + '.csv'
-	with open(path, 'w') as file:
-		for pair in neigh_pairs:
-			file.write('\t'.join(pair) + '\n')
+import nltk
+nltk.download('wordnet')
+nltk.download('wordnet_ic')
+from nltk.corpus import wordnet
+from pattern.text.en import lemma, lexeme
+from tqdm import tqdm
 
 
 with open('out/annotation_dataset.txt', 'r') as file:
-	annotations = file.readlines()
+	annotations_data = file.readlines()
 
-annotations = [line[:-1].split('\t') for line in annotations]
+annotations_data = [line[:-1].split('\t') for line in annotations_data]
 
 synonyms, related = {}, {}
 part_of, made_of = {}, {}
 hyponyms, hyperonyms = {}, {}
 cohyponyms = {}
 
-for annotation in annotations:
+for annotation in annotations_data:
 	# structure of an annotation is ['kind', 'first_neigh', 'second_neigh']
-	kind, first, second = annotation
+	kind, first, second = annotation[0], annotation[1].lower(), annotation[2].lower()
 
 	if kind == 's':
 		if first not in synonyms:
@@ -76,54 +77,149 @@ for annotation in annotations:
 		cohyponyms[second].append(first)
 
 
-print(synonyms)
+def get_hypo_cohypo_hyper(word):
+	hyponyms, cohyponyms, hypernyms = [], [], []
+	for syn in wordnet.synsets(word):
+		if syn.lemmas()[0].name().lower() == word:
+			for l in syn.hyponyms():
+				hyponyms.append(l.lemmas()[0].name().lower())
+			for l in syn.hypernyms():
+				hypernyms.append(l.lemmas()[0].name().lower())
 
-"""
-write_to_csv('synonyms', synonyms)
-write_to_csv('related', related)
-write_to_csv('part_of', part_of)
-write_to_csv('made_of', made_of)
-write_to_csv('hyponyms', hyponyms)
-write_to_csv('hyperonyms', hyperonyms)
-write_to_csv('cohyponyms', cohyponyms)
-"""
+	for hyper in hypernyms:
+		for syn in wordnet.synsets(hyper):
+			if syn.lemmas()[0].name().lower() == hyper:
+				for l in syn.hyponyms():
+					cohyponyms.append(l.lemmas()[0].name().lower())
 
-new_content = []
+	return set(hyponyms), set(cohyponyms), set(hypernyms)
+
+
+def get_partof_madeof(word):
+	partof, madeof = [], []
+	for syn in wordnet.synsets(word):
+		if syn.lemmas()[0].name().lower() == word:
+			for l in syn.part_meronyms():
+				partof.append(l.lemmas()[0].name().lower())
+			for l in syn.substance_meronyms():
+				partof.append(l.lemmas()[0].name().lower())
+			for l in syn.part_holonyms():
+				madeof.append(l.lemmas()[0].name().lower())
+			for l in syn.substance_holonyms():
+				madeof.append(l.lemmas()[0].name().lower())
+	return set(partof), set(madeof)
+ 
+
+def get_syn_ant(word):
+	synonyms, antonyms = [], []
+	for syn in wordnet.synsets(word):
+		if syn.lemmas()[0].name().lower() == word:
+			for l in syn.lemmas():
+				synonyms.append(l.name().lower())
+				if l.antonyms():
+					antonyms.append(l.antonyms()[0].name())
+	return set(synonyms), set(antonyms)
+
+
 
 with open('out/voisins', 'r') as file:
-	i = 0
-	for line in file:
-		line = line.split()
-		word, n_neighbors, neighbors = line[0], line[1], line[2:]
+	lines = file.readlines()
 
-		new_neighbors = []
-		for neigh in neighbors:
-			kinds = ''
-			if neigh in synonyms and word in synonyms[neigh]:
+annotations = []
+
+"""
+def tqdm(anything):
+	return anything
+"""
+
+for line in tqdm(lines):
+	line = line.split()
+	word, n_neighbors, neighbors = line[0], line[1], line[2:]
+
+	try:
+		word_basis = lemma(word)
+	except RuntimeError:
+		word_basis = lemma(word)
+
+	word_lex = lexeme(word)
+
+	hypo, cohypo, hyper = get_hypo_cohypo_hyper(word_basis)
+	partof, madeof = get_partof_madeof(word_basis)
+	syn, ant = get_syn_ant(word_basis)
+	
+	hypo.discard(word_basis)
+	cohypo.discard(word_basis)
+	hyper.discard(word_basis)
+	syn.discard(word_basis)
+	ant.discard(word_basis)
+	partof.discard(word_basis)
+	madeof.discard(word_basis)
+
+	annotated_neighbors = []
+	
+	for neigh in neighbors:
+		
+		kinds = ''
+
+		if neigh in ant:
+			kinds += '[ANTONYM]'
+		if neigh in hypo:
+			kinds += '[HYPO]'
+		if neigh in hyper:
+			kinds += '[HYPER]'
+
+		if kinds == '' and neigh in word_lex:
+			kinds += '[MORPHO]'
+		if kinds == '' and word[:2] == neigh[:2] and nltk.edit_distance(word, neigh) == 1:
+			kinds += '[MORPHO]'
+
+		if '[MORPHO]' not in kinds:
+
+			if neigh in syn:
 				kinds += '[SYNONYM]'
-			if neigh in related and word in related[neigh]:
-				kinds += '[RELATED]'
-			if neigh in part_of and word in part_of[neigh]:
+			if neigh in partof:
 				kinds += '[PARTOF]'
-			if neigh in made_of and word in made_of[neigh]:
+			if neigh in madeof:
 				kinds += '[MADEOF]'
-			if neigh in hyponyms and word in hyponyms[neigh]:
-				kinds += '[HYPO]'
-			if neigh in cohyponyms and word in cohyponyms[neigh]:
-				kinds += '[COHYPO]'
-			if neigh in hyperonyms and word in hyperonyms[neigh]:
-				kinds += '[HYPER]'
 
-			if kinds != '':
-				new_neighbors.append(neigh + kinds)
+			if '[ANTONYM]' not in kinds and '[SYNONYM]' not in kinds:
+				if neigh in cohypo:
+					kinds += '[COHYPO]'
 
-		if len(new_neighbors) > 0:
-			new_content.append([word] + [n_neighbors] + [new_neighbors])
-		#file.write('%-25s %-4s %s\n' % (neigh, n_neighbors[idx], neighbors))
 
-		i += 1
-		if i > 1000:
-			break
+		if neigh in related and word in related[neigh]:
+			kinds += '[RELATED]'
+		if neigh in hyponyms and word in hyponyms[neigh] and '[HYPO]' not in kinds:
+			kinds += '[HYPO]'
+		if neigh in hyperonyms and word in hyperonyms[neigh] and '[HYPER]' not in kinds:
+			kinds += '[HYPER]'
 
-for line in new_content:
-	print(line)
+		if '[MORPHO]' not in kinds:
+
+			if neigh in synonyms and word in synonyms[neigh] and '[SYNONYM]' not in kinds:
+				kinds += '[SYNONYM]'
+			if neigh in part_of and word in part_of[neigh] and '[PARTOF]' not in kinds:
+				kinds += '[PARTOF]'
+			if neigh in made_of and word in made_of[neigh] and '[MADEOF]' not in kinds:
+				kinds += '[MADEOF]'
+
+			if '[ANTONYM]' not in kinds and '[SYNONYM]' not in kinds:
+				if neigh in cohyponyms and word in cohyponyms[neigh] and '[COHYPO]' not in kinds:
+					kinds += '[COHYPO]'
+					
+
+		if kinds == '':
+			if nltk.edit_distance(word, neigh) <= abs(len(word) - len(neigh)) and word[:2] == neigh[:2] \
+				and ('_' in word and '_' in neigh or '_' not in word and '_' not in neigh):
+				kinds += '[MORPHO]'
+		
+		if kinds != '':
+			annotated_neighbors.append(neigh + kinds)
+	
+	if len(annotated_neighbors) > 1:
+		annotations.append([word] + [n_neighbors] + [annotated_neighbors])
+
+with open('out/annotations', 'w') as file:
+	for entry in annotations:
+		word, n_neighbors, neighbors = entry[0], entry[1], ' '.join(entry[2])
+		file.write('%-25s %-4s %s\n' % (word, n_neighbors, neighbors))
