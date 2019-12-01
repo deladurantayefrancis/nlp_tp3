@@ -67,7 +67,7 @@ for annotation in annotations:
 		hyperonyms[first].append(second)
 		hyponyms[second].append(first)
 
-	elif kind in ['S', 'cohyponym']:
+	elif kind in ['S', 'cohyponym', 'distributional', 'functional', 'visual']:
 		if first not in cohyponyms:
 			cohyponyms[first] = []
 		if second not in cohyponyms:
@@ -125,4 +125,5 @@ with open('out/voisins', 'r') as file:
 		if i > 1000:
 			break
 
-print(new_content)
+for line in new_content:
+	print(line)
