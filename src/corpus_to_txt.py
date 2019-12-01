@@ -3,6 +3,7 @@ import re
 
 from tqdm import tqdm
 
+
 blog = 'blog'
 classe = 'classe'
 

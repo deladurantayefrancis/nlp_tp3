@@ -10,10 +10,10 @@ from scipy.spatial import distance
 from tqdm import tqdm
 
 
-FOLDER = sys.argv[1]
+FOLDER, RESIZE = sys.argv[1], int(sys.argv[2])
 nlp = spacy.load(f'{FOLDER}/spacy.word2vec.model/')
 
-nlp.vocab.vectors.resize((25000, 300))
+nlp.vocab.vectors.resize((RESIZE, nlp.vocab.vectors.shape[1]))
 
 keys = list(nlp.vocab.vectors.keys())
 vectors = np.asarray([nlp.vocab.vectors[key] for key in keys])

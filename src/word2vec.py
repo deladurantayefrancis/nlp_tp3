@@ -10,8 +10,8 @@ from gensim import models, utils
 from gensim.models.phrases import Phrases, Phraser
 
 
-# folder used to save the model
-FOLDER = sys.argv[1]
+# command line arguments
+FOLDER, THRESHOLD, SIZE = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 os.makedirs(FOLDER, exist_ok=True)
 
 with open('data/train_posts.txt', 'r') as file:
@@ -20,7 +20,7 @@ with open('data/train_posts.txt', 'r') as file:
 sentences = [utils.simple_preprocess(sent) for sent in sentences]
 
 start = time.time()
-phrases = Phrases(sentences, threshold=50)
+phrases = Phrases(sentences, threshold=THRESHOLD)
 bigram = Phraser(phrases)
 sentences = [bigram[sent] for sent in sentences]
 
@@ -47,6 +47,6 @@ print(bigram[test5])
 print('phraser:', time.time() - start)
 
 start = time.time()
-model = models.Word2Vec(sentences=sentences, size=200)
-model.wv.save_word2vec_format(f'{FOLDER}/word2vec.txt')
+model = models.Word2Vec(sentences=sentences, size=SIZE)
+model.wv.save_word2vec_format(f'{FOLDER}/word2vec_T-{THRESHOLD}_S-{SIZE}.txt')
 print('word2vec:', time.time() - start)
