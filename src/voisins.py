@@ -25,10 +25,8 @@ n_neighbors = np.sum(dists >= .6, axis=1) - 1  # self is not a neighbor
 most_neighbors = np.flip(np.argsort(n_neighbors))
 sort_ids = np.flip(np.argsort(dists, axis=1), axis=1)
 
-with open(f'out/voisins_{FOLDER}', 'w') as file:
+with open(f'out/voisins_{RESIZE}_{FOLDER}', 'w') as file:
 	for idx in tqdm(most_neighbors):
-		if n_neighbors[idx] < 7:
-			break
 		word = nlp.vocab[keys[idx]].text
 		neighbors = ' '.join([nlp.vocab[keys[sort_ids[idx, j]]].text
 			for j in range(1, min(15, n_neighbors[idx]))])
