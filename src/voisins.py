@@ -28,6 +28,6 @@ sort_ids = np.flip(np.argsort(dists, axis=1), axis=1)
 with open(f'out/voisins_{RESIZE}_{FOLDER}', 'w') as file:
 	for idx in tqdm(most_neighbors):
 		word = nlp.vocab[keys[idx]].text
-		neighbors = ' '.join([nlp.vocab[keys[sort_ids[idx, j]]].text
-			for j in range(1, min(15, n_neighbors[idx]))])
+		neighbors = ' '.join([nlp.vocab[keys[sort_ids[idx, j+1]]].text
+			for j in range(min(14, n_neighbors[idx]))])
 		file.write('%-25s %-4s %s\n' % (word, n_neighbors[idx], neighbors))

@@ -6,7 +6,7 @@ from pattern.text.en import lemma, lexeme
 from tqdm import tqdm
 
 
-with open('out/annotation_dataset.txt', 'r') as file:
+with open('data/annotation_dataset.txt', 'r') as file:
 	annotations_data = file.readlines()
 
 annotations_data = [line[:-1].split('\t') for line in annotations_data]
@@ -126,11 +126,6 @@ with open('out/voisins', 'r') as file:
 	lines = file.readlines()
 
 annotations = []
-
-"""
-def tqdm(anything):
-	return anything
-"""
 
 for line in tqdm(lines):
 	line = line.split()
